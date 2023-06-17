@@ -26,6 +26,10 @@ func main() {
 
 		fmt.Println(decimalToHex(dat[0x00B9F6]), " ", decimalToHex(dat[0x00B9C4]), " ", decimalToHex(dat[0x00B992]))
 
+		// decompressLZ2(dat[0x0881FD:])
+		decompressedDat := decompressLZ2(dat)
+
+		os.WriteFile("file.bin", decompressedDat, 0644)
 	}, w)
 	fileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".smc"}))
 
@@ -43,8 +47,4 @@ func main() {
 
 func decimalToHex(decimal byte) string {
 	return strconv.FormatInt(int64(decimal), 16)
-}
-
-func decompressLZ2(data []byte) {
-
 }
