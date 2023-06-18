@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+# Data file
+tsmwe-data.json

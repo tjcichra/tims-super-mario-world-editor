@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -11,7 +12,22 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func createSelectARomWindow(app fyne.App) fyne.Window {
+const TSMWE_DATA_FILE string = "tsmwe-data.json"
+
+type TSMWEData struct {
+	RecentRoms []string `json:"recent_roms"`
+}
+
+func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
+	tsmweData := readTSMWEData()
+	recentRoms := tsmweData.RecentRoms
+	fmt.Println("recentRoms", recentRoms)
+	// tsmweData.RecentRoms[0] = "test"
+
+	// filed, _ = json.MarshalIndent(tsmweData, "", " ")
+
+	// os.WriteFile(TSMWE_DATA_FILE, filed, 0644)
+
 	selectARomWindow := app.NewWindow("Select a ROM")
 	selectARomWindow.Resize(fyne.NewSize(300, 300))
 
@@ -35,6 +51,8 @@ func createSelectARomWindow(app fyne.App) fyne.Window {
 		// opts.Quality = 1
 
 		// fmt.Println(i)
+		mainWindow.Show()
+		selectARomWindow.Hide()
 	}, selectARomWindow)
 	openRomFileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".smc"}))
 
@@ -44,9 +62,41 @@ func createSelectARomWindow(app fyne.App) fyne.Window {
 
 	mostRecentLabel := widget.NewLabel("Most Recent:")
 
-	selectARomContainer1 := container.NewVBox(openRomButton, mostRecentLabel)
+	mostRecentList := widget.NewList(
+		func() int {
+			return len(recentRoms)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewButton("template", nil)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			listButton := o.(*widget.Button)
+			romPath := recentRoms[i]
+
+			listButton.SetText(romPath)
+			listButton.OnTapped = func() {
+				mainWindow.Show()
+				selectARomWindow.Hide()
+			}
+		})
+
+	selectARomContainer1 := container.NewVBox(openRomButton, mostRecentLabel, mostRecentList)
 
 	selectARomWindow.SetContent(selectARomContainer1)
 
 	return selectARomWindow
+}
+
+func readTSMWEData() TSMWEData {
+	var tsmweData TSMWEData
+
+	file, err := os.ReadFile(TSMWE_DATA_FILE)
+	if err != nil {
+		tsmweData.RecentRoms = []string{}
+		return tsmweData
+	}
+
+	json.Unmarshal(file, &tsmweData)
+
+	return tsmweData
 }

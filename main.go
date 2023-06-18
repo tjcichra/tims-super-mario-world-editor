@@ -13,11 +13,7 @@ import (
 func main() {
 	a := app.New()
 
-	selectARomWindow := createSelectARomWindow(a)
-
-	selectARomWindow.Show()
-
-	w := a.NewWindow("Hello")
+	mainWindow := a.NewWindow("Hello")
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
@@ -37,7 +33,7 @@ func main() {
 	// img := canvas.NewImageFromReader(bytes.NewReader(imgBytes), "photo")
 
 	hello := widget.NewLabel("Hello Fyne!")
-	w.SetContent(container.NewBorder(toolbar, nil, nil, nil, container.NewVBox(
+	mainWindow.SetContent(container.NewBorder(toolbar, nil, nil, nil, container.NewVBox(
 		hello,
 		widget.NewButton("Hi!", func() {
 			hello.SetText("Welcome :)")
@@ -45,7 +41,9 @@ func main() {
 	// container.NewMax(img),
 	))
 
-	// w.Show()
+	selectARomWindow := createSelectARomWindow(a, mainWindow)
+	selectARomWindow.Show()
+
 	a.Run()
 }
 
