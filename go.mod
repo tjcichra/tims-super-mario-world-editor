@@ -2,7 +2,10 @@ module tims-super-mario-world-editor
 
 go 1.20
 
-require fyne.io/fyne/v2 v2.3.5
+require (
+	fyne.io/fyne v1.4.3
+	fyne.io/fyne/v2 v2.3.5
+)
 
 require (
 	fyne.io/systray v1.10.1-0.20230602210930-b6a2d6ca2a7b // indirect

@@ -2,47 +2,51 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
-	"fyne.io/fyne/v2"
+	"fyne.io/fyne/theme"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 )
 
 func main() {
 	a := app.New()
+
+	selectARomWindow := createSelectARomWindow(a)
+
+	selectARomWindow.Show()
+
 	w := a.NewWindow("Hello")
 
-	fileDialog := dialog.NewFileOpen(func(uriReadCloser fyne.URIReadCloser, err error) {
-		filePath := uriReadCloser.URI().Path()
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
+			fmt.Println("New document")
+		}),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarAction(theme.ContentCutIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.HelpIcon(), func() {
+			fmt.Println("Display help")
+		}),
+	)
 
-		fmt.Println(filePath)
-
-		dat, err := os.ReadFile(filePath)
-
-		fmt.Println(decimalToHex(dat[0x00B9F6]), " ", decimalToHex(dat[0x00B9C4]), " ", decimalToHex(dat[0x00B992]))
-
-		// decompressLZ2(dat[0x0881FD:])
-		decompressedDat := decompressLZ2(dat)
-
-		os.WriteFile("file.bin", decompressedDat, 0644)
-	}, w)
-	fileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".smc"}))
+	// imgBytes, _ := os.ReadFile("photo")
+	// img := canvas.NewImageFromReader(bytes.NewReader(imgBytes), "photo")
 
 	hello := widget.NewLabel("Hello Fyne!")
-	w.SetContent(container.NewVBox(
+	w.SetContent(container.NewBorder(toolbar, nil, nil, nil, container.NewVBox(
 		hello,
 		widget.NewButton("Hi!", func() {
 			hello.SetText("Welcome :)")
-			fileDialog.Show()
-		}),
+		})),
+	// container.NewMax(img),
 	))
 
-	w.ShowAndRun()
+	// w.Show()
+	a.Run()
 }
 
 func decimalToHex(decimal byte) string {
