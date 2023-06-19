@@ -4,29 +4,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
+	"golang.org/x/exp/slices"
 )
 
 const TSMWE_DATA_FILE string = "tsmwe-data.json"
 
+type RecentRomEntry struct {
+	RomPath      string `json:"romPath"`
+	LastAccessed int64  `json:"lastAccessed"`
+}
+
 type TSMWEData struct {
-	RecentRoms []string `json:"recent_roms"`
+	RecentRoms []RecentRomEntry `json:"recent_roms"`
 }
 
 func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 	tsmweData := readTSMWEData()
 	recentRoms := tsmweData.RecentRoms
-	fmt.Println("recentRoms", recentRoms)
-	// tsmweData.RecentRoms[0] = "test"
 
-	// filed, _ = json.MarshalIndent(tsmweData, "", " ")
-
-	// os.WriteFile(TSMWE_DATA_FILE, filed, 0644)
+	// Sort recent roms by when they were last accessed.
+	sort.Slice(recentRoms, func(i, j int) bool {
+		return recentRoms[i].LastAccessed > recentRoms[j].LastAccessed
+	})
 
 	selectARomWindow := app.NewWindow("Select a ROM")
 	selectARomWindow.Resize(fyne.NewSize(300, 300))
@@ -36,11 +43,11 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 			return
 		}
 
-		filePath := uriReadCloser.URI().Path()
+		romPath := uriReadCloser.URI().Path()
 
-		fmt.Println(filePath)
+		fmt.Println(romPath)
 
-		dat, err := os.ReadFile(filePath)
+		dat, err := os.ReadFile(romPath)
 
 		fmt.Println(decimalToHex(dat[0x00B9F6]), " ", decimalToHex(dat[0x00B9C4]), " ", decimalToHex(dat[0x00B992]))
 
@@ -51,8 +58,8 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 		// opts.Quality = 1
 
 		// fmt.Println(i)
-		mainWindow.Show()
-		selectARomWindow.Hide()
+		updateRecentlyOpenedRoms(romPath, tsmweData)
+		openRom(mainWindow, selectARomWindow)
 	}, selectARomWindow)
 	openRomFileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".smc"}))
 
@@ -60,9 +67,9 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 		openRomFileDialog.Show()
 	})
 
-	mostRecentLabel := widget.NewLabel("Most Recent:")
+	recentlyOpenedRomsLabel := widget.NewLabel("Recently Opened ROMs:")
 
-	mostRecentList := widget.NewList(
+	recentlyOpenedRomsList := widget.NewList(
 		func() int {
 			return len(recentRoms)
 		},
@@ -71,16 +78,16 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			listButton := o.(*widget.Button)
-			romPath := recentRoms[i]
+			romPath := recentRoms[i].RomPath
 
 			listButton.SetText(romPath)
 			listButton.OnTapped = func() {
-				mainWindow.Show()
-				selectARomWindow.Hide()
+				updateRecentlyOpenedRoms(romPath, tsmweData)
+				openRom(mainWindow, selectARomWindow)
 			}
 		})
 
-	selectARomContainer1 := container.NewVBox(openRomButton, mostRecentLabel, mostRecentList)
+	selectARomContainer1 := container.NewVBox(openRomButton, recentlyOpenedRomsLabel, recentlyOpenedRomsList)
 
 	selectARomWindow.SetContent(selectARomContainer1)
 
@@ -92,11 +99,36 @@ func readTSMWEData() TSMWEData {
 
 	file, err := os.ReadFile(TSMWE_DATA_FILE)
 	if err != nil {
-		tsmweData.RecentRoms = []string{}
+		tsmweData.RecentRoms = []RecentRomEntry{}
 		return tsmweData
 	}
 
 	json.Unmarshal(file, &tsmweData)
 
 	return tsmweData
+}
+
+func updateRecentlyOpenedRoms(romPath string, tsmweData TSMWEData) {
+	recentRoms := tsmweData.RecentRoms
+	romPathIndex := slices.IndexFunc(recentRoms, func(e RecentRomEntry) bool { return e.RomPath == romPath })
+
+	if romPathIndex == -1 {
+		recentRoms = append(recentRoms, RecentRomEntry{
+			RomPath:      romPath,
+			LastAccessed: time.Now().Unix(),
+		})
+	} else {
+		recentRoms[romPathIndex].LastAccessed = time.Now().Unix()
+	}
+
+	tsmweData.RecentRoms = recentRoms
+
+	fileJson, _ := json.MarshalIndent(tsmweData, "", " ")
+
+	os.WriteFile(TSMWE_DATA_FILE, fileJson, 0644)
+}
+
+func openRom(mainWindow fyne.Window, selectARomWindow fyne.Window) {
+	mainWindow.Show()
+	selectARomWindow.Hide()
 }
