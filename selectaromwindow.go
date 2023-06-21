@@ -26,7 +26,7 @@ type TSMWEData struct {
 	RecentRoms []RecentRomEntry `json:"recent_roms"`
 }
 
-func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
+func createSelectARomWindow(app fyne.App) fyne.Window {
 	tsmweData := readTSMWEData()
 	recentRoms := tsmweData.RecentRoms
 
@@ -36,7 +36,7 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 	})
 
 	selectARomWindow := app.NewWindow("Select a ROM")
-	selectARomWindow.Resize(fyne.NewSize(300, 300))
+	selectARomWindow.Resize(fyne.NewSize(600, 400))
 
 	openRomFileDialog := dialog.NewFileOpen(func(uriReadCloser fyne.URIReadCloser, err error) {
 		if uriReadCloser == nil {
@@ -47,9 +47,7 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 
 		fmt.Println(romPath)
 
-		dat, err := os.ReadFile(romPath)
-
-		fmt.Println(decimalToHex(dat[0x00B9F6]), " ", decimalToHex(dat[0x00B9C4]), " ", decimalToHex(dat[0x00B992]))
+		// fmt.Println(decimalToHex(dat[0x00B9F6]), " ", decimalToHex(dat[0x00B9C4]), " ", decimalToHex(dat[0x00B992]))
 
 		// decompressLZ2(dat[0x0881FD:])
 		// gfx0file := decompressLZ2(dat[((0x08D9F9&0x7F0000)>>1)|(0x08D9F9&0x7FFF):])
@@ -57,9 +55,9 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 		// var opts jpeg.Options
 		// opts.Quality = 1
 
-		// fmt.Println(i)
-		updateRecentlyOpenedRoms(romPath, tsmweData)
-		openRom(mainWindow, selectARomWindow)
+		// fmt.Println(len(gfx0file))
+
+		openRom(app, romPath, tsmweData, selectARomWindow)
 	}, selectARomWindow)
 	openRomFileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".smc"}))
 
@@ -82,12 +80,11 @@ func createSelectARomWindow(app fyne.App, mainWindow fyne.Window) fyne.Window {
 
 			listButton.SetText(romPath)
 			listButton.OnTapped = func() {
-				updateRecentlyOpenedRoms(romPath, tsmweData)
-				openRom(mainWindow, selectARomWindow)
+				openRom(app, romPath, tsmweData, selectARomWindow)
 			}
 		})
 
-	selectARomContainer1 := container.NewVBox(openRomButton, recentlyOpenedRomsLabel, recentlyOpenedRomsList)
+	selectARomContainer1 := container.NewBorder(openRomButton, nil, nil, nil, container.NewMax(recentlyOpenedRomsLabel, recentlyOpenedRomsList))
 
 	selectARomWindow.SetContent(selectARomContainer1)
 
@@ -128,7 +125,17 @@ func updateRecentlyOpenedRoms(romPath string, tsmweData TSMWEData) {
 	os.WriteFile(TSMWE_DATA_FILE, fileJson, 0644)
 }
 
-func openRom(mainWindow fyne.Window, selectARomWindow fyne.Window) {
-	mainWindow.Show()
+func openRom(app fyne.App, romPath string, tsmweData TSMWEData, selectARomWindow fyne.Window) {
+	updateRecentlyOpenedRoms(romPath, tsmweData)
+
+	dat, _ := os.ReadFile(romPath)
+
 	selectARomWindow.Hide()
+
+	gfx0file := decompressLZ2(dat[((0x08ECBB&0x7F0000)>>1)|(0x08D9F9&0x7FFF):])
+	gfx0image := imageFrom4bpp(gfx0file)
+
+	mainWindow := createMainWindow(app, gfx0image)
+	mainWindow.SetMaster()
+	mainWindow.Show()
 }
