@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"tims-super-mario-world-editor/gui"
 
 	"fyne.io/fyne/v2/app"
 )
@@ -9,7 +10,7 @@ import (
 func main() {
 	app := app.New()
 
-	selectARomWindow := createSelectARomWindow(app)
+	selectARomWindow := gui.CreateSelectARomWindow(app)
 	selectARomWindow.ShowAndRun()
 }
 

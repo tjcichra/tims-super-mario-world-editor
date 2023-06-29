@@ -1,10 +1,10 @@
-package main
+package helper
 
 import (
 	"fmt"
 )
 
-func decompressLZ2(compressedData []byte) []byte {
+func DecompressLZ2(compressedData []byte) []byte {
 	var decompressedData []byte
 	index := 0
 

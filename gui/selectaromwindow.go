@@ -1,4 +1,4 @@
-package main
+package gui
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"time"
+	"tims-super-mario-world-editor/helper"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -26,7 +27,7 @@ type TSMWEData struct {
 	RecentRoms []RecentRomEntry `json:"recent_roms"`
 }
 
-func createSelectARomWindow(app fyne.App) fyne.Window {
+func CreateSelectARomWindow(app fyne.App) fyne.Window {
 	tsmweData := readTSMWEData()
 	recentRoms := tsmweData.RecentRoms
 
@@ -132,8 +133,8 @@ func openRom(app fyne.App, romPath string, tsmweData TSMWEData, selectARomWindow
 
 	selectARomWindow.Hide()
 
-	gfx0file := decompressLZ2(dat[((0x08ECBB&0x7F0000)>>1)|(0x08D9F9&0x7FFF):])
-	gfx0image := imageFrom4bpp(gfx0file)
+	gfx0file := helper.DecompressLZ2(dat[((0x08ECBB&0x7F0000)>>1)|(0x08D9F9&0x7FFF):])
+	gfx0image := helper.ImageFrom4bpp(gfx0file)
 
 	mainWindow := createMainWindow(app, gfx0image)
 	mainWindow.SetMaster()

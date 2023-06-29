@@ -3,7 +3,6 @@ module tims-super-mario-world-editor
 go 1.20
 
 require (
-	fyne.io/fyne v1.4.3
 	fyne.io/fyne/v2 v2.3.5
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )

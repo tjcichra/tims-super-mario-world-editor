@@ -1,11 +1,11 @@
-package main
+package helper
 
 import (
 	"image"
 	"image/color"
 )
 
-func imageFrom4bpp(decompressedData []byte) *image.Paletted {
+func ImageFrom4bpp(decompressedData []byte) *image.Paletted {
 	img := image.NewPaletted(image.Rect(0, 0, 128, 128), color.Palette{
 		color.RGBA{
 			R: 43,
