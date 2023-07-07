@@ -77,7 +77,7 @@ func createMainTree(tabs *container.AppTabs) *widget.Tree {
 					if strings.HasPrefix(id, "level") {
 						levelId, _ := strconv.ParseInt(id[5:], 16, 64)
 
-						fmt.Println("level ", levelId)
+						tabs.Append(createLevelTab(levelId))
 					} else if strings.HasPrefix(id, "overworld") {
 						overworldId, _ := strconv.ParseInt(id[9:], 16, 64)
 
@@ -85,7 +85,7 @@ func createMainTree(tabs *container.AppTabs) *widget.Tree {
 					} else if strings.HasPrefix(id, "graphics") {
 						graphicsId, _ := strconv.ParseInt(id[8:], 16, 64)
 
-						fmt.Println("graphics", graphicsId)
+						tabs.Append(createGraphicsTab(graphicsId))
 					}
 				}
 			}
