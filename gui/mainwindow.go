@@ -16,7 +16,10 @@ func createMainWindow(app fyne.App, image *image.Paletted) fyne.Window {
 	mainWindow := app.NewWindow("Hello")
 
 	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
+		widget.NewToolbarAction(theme.FolderOpenIcon(), func() {
+			fmt.Println("New document")
+		}),
+		widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {
 			fmt.Println("New document")
 		}),
 		widget.NewToolbarSeparator(),
@@ -29,42 +32,20 @@ func createMainWindow(app fyne.App, image *image.Paletted) fyne.Window {
 			// graphicsWindow.Show()
 		}),
 	)
-	tree := widget.NewTree(
-		func(id widget.TreeNodeID) []widget.TreeNodeID {
-			switch id {
-			case "":
-				return []widget.TreeNodeID{"levels", "b", "c"}
-			case "levels":
-				return []widget.TreeNodeID{"a1", "a2"}
-			}
-			return []string{}
-		},
-		func(id widget.TreeNodeID) bool {
-			return id == "" || id == "levels"
-		},
-		func(branch bool) fyne.CanvasObject {
-			if branch {
-				return widget.NewLabel("Branch template")
-			}
-			return widget.NewLabel("Leaf template")
-		},
-		func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
-			text := id
-			if branch {
-				text += " (branch)"
-			}
-			o.(*widget.Label).SetText(text)
-		})
+
+	tabs := container.NewAppTabs()
+
+	tree := createMainTree(tabs)
 
 	// tabs := container.NewAppTabs(
 	// 	container.NewTabItem("Tab 1", widget.NewLabel("Hello")),
 	// 	container.NewTabItem("Tab 2", widget.NewLabel("World!")),
 	// )
 
-	tabs := container.NewAppTabs([]*container.TabItem{
-		// container.NewTabItem("Tab 1", container.NewBorder(toolbar, nil, nil, nil, nil)),
-		container.NewTabItem("Tab 2", widget.NewLabel("World!"))}...,
-	)
+	// tabs := container.NewAppTabs([]*container.TabItem{
+	// 	// container.NewTabItem("Tab 1", container.NewBorder(toolbar, nil, nil, nil, nil)),
+	// 	container.NewTabItem("Tab 2", widget.NewLabel("World!"))}...,
+	// )
 
 	// tabs.SetTabLocation(container.TabLocationLeading)
 
