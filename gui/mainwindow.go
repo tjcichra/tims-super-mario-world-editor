@@ -35,7 +35,7 @@ func createMainWindow(app fyne.App, image *image.Paletted) fyne.Window {
 
 	tabs := container.NewAppTabs()
 
-	tree := createMainTree(tabs)
+	tree := createMainTree(tabs, toolbar)
 
 	// tabs := container.NewAppTabs(
 	// 	container.NewTabItem("Tab 1", widget.NewLabel("Hello")),

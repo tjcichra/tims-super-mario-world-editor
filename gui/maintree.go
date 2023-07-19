@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"tims-super-mario-world-editor/gui/widgets"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -13,7 +14,7 @@ import (
 const NUMBER_OF_LEVELS = 0x1FF
 const NUMBER_OF_GRAPHICS_FILES = 0x33
 
-func createMainTree(tabs *container.AppTabs) *widget.Tree {
+func createMainTree(tabs *container.AppTabs, toolbar *widget.Toolbar) *widget.Tree {
 	var displayNameMap = make(map[string]string)
 
 	levelNumbers := make([]widget.TreeNodeID, NUMBER_OF_LEVELS+1)
@@ -64,13 +65,13 @@ func createMainTree(tabs *container.AppTabs) *widget.Tree {
 			if branch {
 				return widget.NewLabel("Branch template")
 			}
-			return widget.NewButton("Leaf template", nil)
+			return widgets.NewTappableLabel("Leaf template")
 		},
 		func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
 			if branch {
 				o.(*widget.Label).SetText(id)
 			} else {
-				button := o.(*widget.Button)
+				button := o.(*widgets.TappableLabel)
 
 				button.SetText(displayNameMap[id])
 				button.OnTapped = func() {
@@ -78,6 +79,9 @@ func createMainTree(tabs *container.AppTabs) *widget.Tree {
 						levelId, _ := strconv.ParseInt(id[5:], 16, 64)
 
 						tabs.Append(createLevelTab(levelId))
+
+						toolbar.Items = createLevelToolbar()
+						toolbar.Refresh()
 					} else if strings.HasPrefix(id, "overworld") {
 						overworldId, _ := strconv.ParseInt(id[9:], 16, 64)
 
